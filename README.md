@@ -1,7 +1,7 @@
 # EditableCMD_Plugin_Template
 A project template for EditableCMD plugins.
 
-A copy of **EditableCMDLibrary** is required to build a plugin, which will be made publicly available at a later date.
+A copy of [watfordjc/EditableCMDLibrary](https://github.com/watfordjc/EditableCMDLibrary) is required to build a plugin.
 
 A copy of **EditableCMD** or **EditableCMDSanitised** is required to test a plugin. **EditableCMDSanitised** will be made publicly available at a later date.
 
