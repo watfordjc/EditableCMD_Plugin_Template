@@ -8,6 +8,7 @@
     <NeutralLanguage>en-US</NeutralLanguage>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

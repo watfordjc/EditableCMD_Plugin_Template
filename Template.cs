@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
@@ -21,81 +22,68 @@ namespace $safeprojectname$
     public class Template : ICommandInput
     {
         #region Plugin Implementation Details
-        /// <summary>
-        /// Name of the plugin.
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.Name"/>
         public string Name => "Template";
-        /// <summary>
-        /// Summary of the plugin's functionality.
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.Description"/>
         /// TODO: Change plugin description
         public string Description => "Handles command TEMPLATE, doing nothing.";
-        /// <summary>
-        /// Author's name (can be <see cref="string.Empty"/>)
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.AuthorName"/>
         /// TODO: Change plugin creator's name
         public string AuthorName => "$username$";
-        /// <summary>
-        /// Author's Twitch username (can be <see cref="string.Empty"/>)
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.AuthorTwitchUsername"/>
         /// TODO: Set plugin creator's Twitch username
         public string AuthorTwitchUsername => string.Empty;
-        /// <summary>
-        /// An array of the keys handled by the plugin. For commands, this should be <see cref="ConsoleKey.Enter"/>.
-        /// </summary>
-        public ConsoleKey[] KeysHandled => new ConsoleKey[] { ConsoleKey.Enter };
-        /// <summary>
-        /// Whether the plugin handles keys/commands input in normal mode (such as a command entered at the prompt).
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.KeysHandled"/>
+        public ConsoleKey[]? KeysHandled => new ConsoleKey[] { ConsoleKey.Enter };
+        /// <inheritdoc cref="ICommandInput.NormalModeHandled"/>
         public bool NormalModeHandled => true;
-        /// <summary>
-        /// Whether the plugin handles keys input in edit mode.
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.EditModeHandled"/>
         public bool EditModeHandled => false;
-        /// <summary>
-        /// Whether the plugin handles keys input in mark mode.
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.MarkModeHandled"/>
         public bool MarkModeHandled => false;
-        /// <summary>
-        /// An array of commands handled by the plugin, in lowercase.
-        /// </summary>
+        /// <inheritdoc cref="ICommandInput.CommandsHandled"/>
         /// TODO: Change command(s) the plugin handles
-        public string[] CommandsHandled => new string[] { "template" };
+        public string[]? CommandsHandled => new string[] { "template" };
         #endregion
 
         private string regexCommandString = string.Empty;
+        private ConsoleState? state;
 
-        /// <summary>
-        /// Called when adding an implementation of the interface to the list of event handlers. Approximately equivalent to a constructor.
-        /// </summary>
-        /// <param name="state">The <see cref="ConsoleState"/> for the current console session.</param>
+        /// <inheritdoc cref="ICommandInput.Init(ConsoleState)"/>
+        [MemberNotNull(nameof(state))]
         public void Init(ConsoleState state)
         {
             // Add all commands listed in CommandsHandled to the regex string for matching if this plugin handles the command.
-            if (KeysHandled.Contains(ConsoleKey.Enter) && CommandsHandled.Length > 0)
+            if (KeysHandled?.Contains(ConsoleKey.Enter) == true && CommandsHandled?.Length > 0)
             {
                 regexCommandString = string.Concat("^(", string.Join('|', CommandsHandled), ")( .*)?$");
             }
+            this.state = state;
         }
 
+        /// TODO: Change XMLDOC summary
         /// <summary>
-        /// Event handler for a <see cref="KeyPress"/>, or a command <c> if (<paramref name="e"/>.Key == <see cref="ConsoleKey.Enter"/>)</c>.
+        /// Event handler for the TEMPLATE command.
         /// </summary>
-        /// <param name="sender">Sender of the event</param>
-        /// <param name="e">The ConsoleKeyEventArgs for the event</param>
-        public void ProcessCommand(object sender, NativeMethods.ConsoleKeyEventArgs e)
+        /// <inheritdoc cref="ICommandInput.ProcessCommand(object?, NativeMethods.ConsoleKeyEventArgs)" path="param"/>
+        public void ProcessCommand(object? sender, NativeMethods.ConsoleKeyEventArgs e)
         {
+            // Call Init() again if state isn't set
+            if (state == null)
+            {
+                Init(e.State);
+            }
             // Return early if we're not interested in the event
             if (e.Handled || // Event has already been handled
                 !e.Key.KeyDown || // A key was not pressed
-                !KeysHandled.Contains(e.Key.ConsoleKey) || // The key pressed wasn't one we handle
-                e.State.EditMode // Edit mode is enabled
+                KeysHandled?.Contains(e.Key.ConsoleKey) != true || // The key pressed wasn't one we handle
+                state.EditMode // Edit mode is enabled
                 )
             {
                 return;
             }
             // We're handling the event if these conditions are met
-            else if (!string.IsNullOrEmpty(regexCommandString) && Regex.Match(e.State.Input.Text.ToString().Trim(), regexCommandString, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).Success)
+            else if (!string.IsNullOrEmpty(regexCommandString) && Regex.Match(state.Input.Text.ToString().Trim(), regexCommandString, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant).Success)
             {
                 e.Handled = true;
             }
